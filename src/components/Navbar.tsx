@@ -64,7 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems, onServiceClick }) => {
             )}
           </button>
 
-          <div className="hidden lg:flex items-center space-x-12">
+          <div className="hidden lg:flex items-center space-x-7">
             <div 
               className="relative group"
               onMouseEnter={() => handleDesktopDropdownHover('about')}

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import  { useState } from 'react';
 
 interface OnboardingStep {
   number: string;
@@ -74,7 +73,7 @@ const Onboarding = () => {
                   className={`timeline-step step-${step.number} ${selectedStep?.number === step.number ? 'active' : ''}`}
                   onClick={() => setSelectedStep(step)}
                 >
-                  <div className="step-number">{step.number}</div>
+                 {<div className="step-number md:min-h-20">{!selectedStep && step.number}</div>} 
                   <div className="step-circle">
                   </div>
                   <div className="step-title">
@@ -93,7 +92,7 @@ const Onboarding = () => {
      {/* Modal */}
  {selectedStep && (
   <div 
-    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+    className="fixed inset-0  flex items-center justify-center p-4 z-50"
     onClick={() => setSelectedStep(null)} // Close when clicking outside
   >
     <div 
@@ -112,7 +111,7 @@ const Onboarding = () => {
       {/* Content */}
       <div className="mt-4 text-center">
         <h3 className="text-xl font-bold text-gray-800 text-center">{selectedStep.title}</h3>
-        <p className="text-gray-600 mt-4">{selectedStep.description}</p>
+        <p className="text-gray-600 mt-4 clamped-text">{selectedStep.description}</p>
       </div>
 
     </div>

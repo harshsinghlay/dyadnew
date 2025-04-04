@@ -1,14 +1,47 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
-import { Logo } from '../assets/images/index.js'
+import { Logo } from '../assets/images/index.js';
 
 interface NavbarProps {
   whatWeDoItems: Record<string, string[]>;
+  onServiceClick?: (service: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
+const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems, onServiceClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeDesktopDropdown, setActiveDesktopDropdown] = useState<string | null>(null);
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById('about');
+    if (element) {
+      const navbarHeight = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+    setIsMenuOpen(false);
+  };
+
+  const handleServiceClick = (service: string) => {
+    if (onServiceClick) {
+      onServiceClick(service);
+    }
+    setIsMenuOpen(false);
+  };
+
+  const handleDesktopDropdownHover = (dropdownName: string) => {
+    setActiveDesktopDropdown(dropdownName);
+  };
+
+  const handleDesktopDropdownLeave = () => {
+    setActiveDesktopDropdown(null);
+  };
 
   return (
     <nav className="bg-white shadow-sm fixed w-full z-50">
@@ -20,8 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
             </Link>
           </div>
 
-          {/* Hamburger Menu Button */}
-          <button
+          <button 
             className="lg:hidden p-2 text-gray-600 hover:text-primary"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
@@ -32,54 +64,65 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
             )}
           </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <div className="relative group">
-              <div className="nav-link flex items-center gap-2">
+          <div className="hidden lg:flex items-center space-x-12">
+            <div 
+              className="relative group"
+              onMouseEnter={() => handleDesktopDropdownHover('about')}
+              onMouseLeave={handleDesktopDropdownLeave}
+            >
+              <div className={`nav-link flex items-center gap-1 ${activeDesktopDropdown === 'about' ? 'text-primary' : ''}`}>
                 About Us <ChevronDown className="w-4 h-4" />
               </div>
               <div className="dropdown-menu">
-                <a href="#story" className="dropdown-item">Our Story & Inspiration</a>
-                <a href="#clarity" className="dropdown-item">Clarity & Accountability</a>
-                <a href="#tech" className="dropdown-item">Innovative Technology</a>
-                <a href="#autonomy" className="dropdown-item">Empowering Physician Autonomy</a>
-                <a href="#why" className="dropdown-item">Why Dyad?</a>
-                <a href="#process" className="dropdown-item">Our Process</a>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Our Story & Inspiration</button>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Clarity & Accountability</button>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Innovative Technology</button>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Empowering Physician Autonomy</button>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Why Dyad?</button>
+                <button onClick={() => scrollToSection('about')} className="dropdown-item">Our Process</button>
               </div>
             </div>
 
-            <div className="relative group">
-              <div className="nav-link flex items-center gap-2">
+            <div 
+              className="relative group"
+              onMouseEnter={() => handleDesktopDropdownHover('what')}
+              onMouseLeave={handleDesktopDropdownLeave}
+            >
+              <div className={`nav-link flex items-center gap-1 ${activeDesktopDropdown === 'what' ? 'text-primary' : ''}`}>
                 What We Do <ChevronDown className="w-4 h-4" />
               </div>
               <div className="dropdown-menu w-[280px]">
                 {Object.entries(whatWeDoItems).map(([category, items]) => (
                   <div key={category} className="dropdown-section">
-                    <div className="dropdown-header">
+                    <button 
+                      className="dropdown-header"
+                      onClick={() => handleServiceClick(category)}
+                    >
                       <span>{category}</span>
                       <ChevronRight className="w-4 h-4" />
-                    </div>
+                    </button>
                     <div className="subdropdown-menu">
                       {items.map((item) => (
-                        <a
+                        <button 
                           key={item}
-                          href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                           className="dropdown-item"
-                          title={item} // Shows full text on hover
+                          onClick={() => handleServiceClick(category)}
                         >
-                          {item?.length > 30 ? item.slice(0, 30) + "..." : item}
-                          {/* {item} */}
-                        </a>
+                          {item}
+                        </button>
                       ))}
                     </div>
-
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative group">
-              <div className="nav-link flex items-center gap-2">
+            <div 
+              className="relative group"
+              onMouseEnter={() => handleDesktopDropdownHover('who')}
+              onMouseLeave={handleDesktopDropdownLeave}
+            >
+              <div className={`nav-link flex items-center gap-1 ${activeDesktopDropdown === 'who' ? 'text-primary' : ''}`}>
                 Who We Serve <ChevronDown className="w-4 h-4" />
               </div>
               <div className="dropdown-menu">
@@ -90,15 +133,13 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
               </div>
             </div>
 
-            <button className="btn-outline">Login/Register</button>
+            <Link to="https://dev.dyadmd.com/#/login" className="btn-outline">Login/Register</Link>
             <Link to="/contact" className="btn-primary">Contact Us</Link>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <div className={`lg:hidden ${isMenuOpen ? 'block' : 'hidden'} pt-4`}>
           <div className="flex flex-col space-y-4">
-            {/* About Us Section */}
             <div className="mobile-dropdown">
               <div className="mobile-dropdown-header" onClick={(e) => {
                 const target = e.currentTarget;
@@ -112,16 +153,15 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
                 <ChevronDown className="w-4 h-4" />
               </div>
               <div className="mobile-dropdown-content">
-                <a href="#story" className="mobile-dropdown-item">Our Story & Inspiration</a>
-                <a href="#clarity" className="mobile-dropdown-item">Clarity & Accountability</a>
-                <a href="#tech" className="mobile-dropdown-item">Innovative Technology</a>
-                <a href="#autonomy" className="mobile-dropdown-item">Empowering Physician Autonomy</a>
-                <a href="#why" className="mobile-dropdown-item">Why Dyad?</a>
-                <a href="#process" className="mobile-dropdown-item">Our Process</a>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Our Story & Inspiration</button>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Clarity & Accountability</button>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Innovative Technology</button>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Empowering Physician Autonomy</button>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Why Dyad?</button>
+                <button onClick={() => scrollToSection('about')} className="mobile-dropdown-item">Our Process</button>
               </div>
             </div>
 
-            {/* What We Do Section */}
             <div className="mobile-dropdown">
               <div className="mobile-dropdown-header" onClick={(e) => {
                 const target = e.currentTarget;
@@ -137,23 +177,22 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
               <div className="mobile-dropdown-content">
                 {Object.entries(whatWeDoItems).map(([category, items]) => (
                   <div key={category} className="mobile-nested-dropdown">
-                    <div className="mobile-dropdown-header" onClick={(e) => {
-                      e.stopPropagation();
-                      const target = e.currentTarget;
-                      target.classList.toggle('active');
-                      const content = target.nextElementSibling;
-                      if (content) {
-                        content.classList.toggle('show');
-                      }
-                    }}>
+                    <button 
+                      className="mobile-dropdown-header"
+                      onClick={() => handleServiceClick(category)}
+                    >
                       <span>{category}</span>
                       <ChevronDown className="w-4 h-4" />
-                    </div>
+                    </button>
                     <div className="mobile-dropdown-content">
                       {items.map((item) => (
-                        <a key={item} href={`#${item.toLowerCase().replace(/\s+/g, '-')}`} className="mobile-dropdown-item">
+                        <button
+                          key={item}
+                          className="mobile-dropdown-item"
+                          onClick={() => handleServiceClick(category)}
+                        >
                           {item}
-                        </a>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -161,7 +200,6 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
               </div>
             </div>
 
-            {/* Who We Serve Section */}
             <div className="mobile-dropdown">
               <div className="mobile-dropdown-header" onClick={(e) => {
                 const target = e.currentTarget;
@@ -183,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = ({ whatWeDoItems }) => {
             </div>
 
             <div className="flex flex-col space-y-3 pt-4">
-              <button className="btn-outline w-full">Login/Register</button>
+              <Link to="https://dev.dyadmd.com/#/login" className="btn-outline w-full">Login/Register</Link>
               <Link to="/contact" className="btn-primary w-full text-center">Contact Us</Link>
             </div>
           </div>

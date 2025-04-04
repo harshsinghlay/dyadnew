@@ -1,19 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronRightCircle as CircleChevronRight, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { LogoDark, img1, img2, img3, img4, img5, img6 } from '../assets/images/index.js';
+import ServiceModal from '../components/ServiceModal.js';
 
 interface HomeProps {
   whatWeDoItems: Record<string, string[]>;
-}
-
-interface ServiceModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  description: string;
-  image: string;
-  details: string[];
 }
 
 interface ServiceCardProps {
@@ -24,25 +16,29 @@ interface ServiceCardProps {
   onClick?: () => void;
 }
 
-const AboutModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, title, description, image }) => {
+// Fix 1: Update the AboutModal interface to match what you're actually using
+interface AboutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description: string;  // Changed from 'details' to 'description'
+}
+
+const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, title, description }) => {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <img 
-          src={image} 
-          alt={title} 
-          className="modal-image w-full"
-        />
-        <div className="modal-body p-4">
-          <h3 className="modal-title mb-2 font-semibold">{title}</h3>
-          <p className="modal-description text-gray-600">{description}</p>
-        </div>
+        <div className="modal-body p-4 text-center">
+          <h3 className="modal-title mb-2 font-semibold text-xl">{title}</h3>
+          <p className="modal-description text-gray-600 clamped-text text-lg" lang="en">{description}</p>
+        </div> 
       </div>
     </div>
   );
 };
+
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ title, detail, image, link, onClick }) => {
   return (
@@ -54,55 +50,86 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, detail, image, link, o
       />
       <div className="service-content">
         <h3 className="text-[20px] md:text-[24px] font-semibold mb-3">{title}</h3>
-        <span className='flex justify-between'>
+        <div className='flex justify-between'>
           <p className="text-gray-600 mb-4">{detail}</p>
           {link ? (
-            <Link to={link} className="service-learn-more ">
-              <CircleChevronRight  />
+            <Link to={link} className="service-learn-more">
+              <CircleChevronRight />
             </Link>
           ) : (
-            <button className="service-learn-more " onClick={onClick}>
+            <button className="service-learn-more" onClick={onClick}>
               <CircleChevronRight />
             </button>
           )}
-        </span>
+        </div>
       </div>
     </div>
   );
 };
 
-const serviceDetails = [
-  {
-    title: "Practice Foundations",
+const serviceDetails = {
+  'Practice Foundations': {
+    title: 'Practice Foundations',
+    items: [
+      'Payer Contracting',
+      'Practice Assessment',
+      'Startup Consulting',
+      'Facility Credentialing',
+      'Physician Credentialing',
+      'Physician Licensing'
+    ],
     detail: "Startup support, compliance, and credentialing",
-    image: img1,
   },
-  {
-    title: "Pre Encounter",
+  'Pre Encounter': {
+    title: 'Pre Encounter',
     detail: "Eligibility verifications, prior-authorizations & patient estimates",
-    image: img2,
+    items: [
+      'Eligibility Verification',
+      'Benefits Verification',
+      'Medical Necessity Reviews',
+      'Prior Authorizations',
+      'Good Faith Estimate'
+    ]
   },
-  {
-    title: "Post Encounter",
+  'Post Encounter': {
+    title: 'Post Encounter',
     detail: "Precision driven charge capture, specialty coding & claims submission",
-    image: img3,
+    items: [
+      'Charge Capture',
+      'Specialty Coding',
+      'Claims Documentation',
+      'Claims Submission'
+    ]
   },
-  {
-    title: "Claims Management",
+  'Claims Management': {
+    title: 'Claims Management',
     detail: "Expedited submissions, resolutions & real-time tracking",
-    image: img4,
+    items: [
+      'Denials & Appeals',
+      'Accounts Receivable (AR)',
+      'Payment Posting & Reconciliation',
+      'Underpayments Recovery',
+      'Rebill Processing'
+    ]
   },
-  {
-    title: "Specialty Billing",
+  'Specialty Billing': {
+    title: 'Specialty Billing',
     detail: "Expert lien management for complex cases",
-    image: img5,
+    items: [
+      'Personal Injury',
+      'Workers Compensation'
+    ]
   },
-  {
-    title: "Real Time Monitoring & Insights",
+  'Real Time Monitoring & Insights': {
+    title: 'Real Time Monitoring & Insights',
     detail: "Credentialing alerts, reporting & strategic insights",
-    image: img6,
-  },
-];
+    items: [
+      '24/7 Network Monitoring',
+      'CAQH Management',
+      'Robust Reporting, Market Analytics, and Benchmarking'
+    ]
+  }
+};
 
 const aboutUsCards = [
   {
@@ -152,25 +179,56 @@ const aboutUsCards = [
 
 const Home: React.FC<HomeProps> = ({ whatWeDoItems }) => {
   const [selectedService, setSelectedService] = useState<string | null>(null);
-  const selectedCard = aboutUsCards.find((card) => card.title === selectedService);
+  const [selectedServiceAbout, setSelectedServiceAbout] = useState<string | null>(null);
+  
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navbarHeight = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        const navbarHeight = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [location]);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
       <section className="hero-section flex justify-center items-end text-white pt-24 md:pt-32">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-          <h1 className="text-[36px] md:text-[48px] lg:text-[56px] leading-[1.2] md:leading-[1.3] font-bold mb-4 md:mb-6 text-center">
+        <div className="max-w-[1300px] mx-auto px-4 md:px-8">
+          <h1 className="text-[36px] md:text-[48px] lg:text-[60px] leading-[1.2] mb-4 md:mb-6 text-center transition-all duration-500 hover:scale-110 font-semibold">
             A Bold Partnership Model<br />
             For Smarter Healthcare Operations
           </h1>
-          <p className="text-[16px] md:text-[18px] lg:text-[20px] leading-[1.6] md:leading-[1.8] mb-8">
+          <p className="text-[16px] md:text-[18px] lg:text-[24px] mb-8 clamped-text transition-all duration-500 hover:scale-110 font-normal">
             We're rewriting the rules. By uniting industry expertise, innovative technology, and operational risk controls, we're introducing a new model of integration that streamlines operations and cuts costs. We provide the tools for physicians to thrive, maintain autonomy, and operate without the complexities of traditional management models.
           </p>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section id="about" className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <h2 className="text-[32px] md:text-[40px] leading-[1.3] font-bold mb-6 text-center">About Us</h2>
           <p className="text-[16px] md:text-[18px] leading-[1.6] text-gray-600 max-w-[960px] mx-auto text-center mb-12 md:mb-16">
@@ -187,15 +245,25 @@ const Home: React.FC<HomeProps> = ({ whatWeDoItems }) => {
                 detail={card.detail}
                 image={card.image}
                 link={card.link}
-                onClick={card.link ? undefined : () => setSelectedService(card.title)}
+                onClick={card.link ? undefined : () => setSelectedServiceAbout(card.title)}
               />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-16 md:py-24">
+{selectedServiceAbout && (
+  <AboutModal
+    isOpen={true}
+    onClose={() => setSelectedServiceAbout(null)}
+    title={selectedServiceAbout}
+    description={
+      aboutUsCards.find(card => card.title === selectedServiceAbout)?.description || ''
+    }
+  />
+)}
+
+      <section id="services" className="py-16 md:py-24">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <h2 className="text-[32px] md:text-[40px] leading-[1.3] font-bold mb-6 text-center">Our Services</h2>
           <p className="text-[16px] md:text-[18px] leading-[1.6] text-gray-600 max-w-[960px] mx-auto text-center mb-12 md:mb-16">
@@ -205,35 +273,44 @@ const Home: React.FC<HomeProps> = ({ whatWeDoItems }) => {
             possible.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {serviceDetails.map((service, index) => (
-              <ServiceCard
-                key={index}
-                title={service.title}
-                detail={service.detail}
-                image={service.image}
-              />
+            {Object.entries(serviceDetails).map(([key, service], index) => (
+              <div key={index} className="service-card">
+                <img 
+                  src={[img1, img2, img3, img4, img5, img6][index]}
+                  alt={service.title}
+                  className="service-image"
+                />
+                <div className="service-content">
+                  <h3 className="text-[20px] md:text-[24px] font-semibold mb-3">{service.title}</h3>
+                  <div className='flex justify-between'>
+                    <p className="text-gray-600 mb-4">
+                      {service.detail}
+                    </p>
+                    <button 
+                      className="service-learn-more"
+                      onClick={() => setSelectedService(key)}
+                    >
+                      <CircleChevronRight/>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Service Modals */}
-      {selectedCard && (
-        <AboutModal
+      {selectedService && (
+        <ServiceModal
           isOpen={true}
           onClose={() => setSelectedService(null)}
-          title={selectedCard.title}
-          description={selectedCard.description}
-          image={selectedCard.image}
-          details={[]}
+          service={serviceDetails[selectedService as keyof typeof serviceDetails]}
         />
       )}
 
-      {/* Footer */}
-      <footer className="footer">
+<footer className="footer">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8">
           <div className="footer-grid">
-            {/* Company Info */}
             <div>
               <img src={LogoDark} alt="DYAD" className="h-6 md:h-8 mb-4 md:mb-6" />
               <p className="text-gray-400 mb-6">
@@ -244,31 +321,48 @@ const Home: React.FC<HomeProps> = ({ whatWeDoItems }) => {
               </div>
             </div>
 
-            {/* Services */}
             <div>
               <h3 className="footer-heading">Services</h3>
               <ul className="space-y-3">
-                {serviceDetails.slice(0, 5).map((service, index) => (
-                  <li key={index}>
-                    <a href="#" className="footer-link">{service.title}</a>
+                {Object.keys(serviceDetails).map((service) => (
+                  <li key={service}>
+                    <button 
+                      onClick={() => setSelectedService(service)}
+                      className="footer-link text-left w-full"
+                    >
+                      {service}
+                    </button>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Company */}
             <div>
               <h3 className="footer-heading">Company</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="footer-link">About Us</a></li>
-                <li><a href="#" className="footer-link">Careers</a></li>
-                <li><a href="#" className="footer-link">News & Updates</a></li>
+                <li>
+                  <button 
+                    onClick={() => scrollToSection('about')} 
+                    className="footer-link text-left w-full"
+                  >
+                    About Us
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => scrollToSection('services')} 
+                    className="footer-link text-left w-full"
+                  >
+                    Services
+                  </button>
+                </li>
+                <li><Link to="/contact" className="footer-link">Contact</Link></li>
+                <li><Link to="/onboarding" className="footer-link">Onboarding</Link></li>
                 <li><a href="#" className="footer-link">Privacy Policy</a></li>
                 <li><a href="#" className="footer-link">Terms of Service</a></li>
               </ul>
             </div>
 
-            {/* Contact */}
             <div>
               <h3 className="footer-heading">Contact</h3>
               <ul className="space-y-4">

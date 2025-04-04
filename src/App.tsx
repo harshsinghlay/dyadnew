@@ -1,11 +1,14 @@
-import React from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Onboarding from './pages/Onboarding';
+import ServiceModal from './components/ServiceModal';
 
 function App() {
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+
   const whatWeDoItems = {
     'Practice Foundations': [
       'Practice Assessment',
@@ -47,15 +50,30 @@ function App() {
     ]
   };
 
+  const handleServiceClick = (service: string) => {
+    setSelectedService(service);
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-white">
-        <Navbar whatWeDoItems={whatWeDoItems} />
+        <Navbar whatWeDoItems={whatWeDoItems} onServiceClick={handleServiceClick} />
         <Routes>
           <Route path="/" element={<Home whatWeDoItems={whatWeDoItems} />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/onboarding" element={<Onboarding />} />
         </Routes>
+        {selectedService && (
+          <ServiceModal
+            isOpen={true}
+            onClose={() => setSelectedService(null)}
+            service={{
+              title: selectedService,
+              items: whatWeDoItems[selectedService as keyof typeof whatWeDoItems],
+              detail: ''
+            }}
+          />
+        )}
       </div>
     </Router>
   );

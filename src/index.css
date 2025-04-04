@@ -177,16 +177,16 @@ background:
 
 .timeline-step {
   @apply flex flex-col items-center relative gap-4 md:gap-0 cursor-pointer;
-  @apply w-full md:w-[180px];
+  @apply w-full md:w-[190px] ;
 }
 
 .step-number {
-  @apply text-[48px] md:text-[72px] font-bold md:mb-8;
+  @apply text-[48px] md:text-[72px] font-bold md:mb-8 ;
   line-height: 1;
 }
 
 .step-circle {
-  @apply relative w-8 h-8 md:w-11 md:h-11 rounded-full transition-transform duration-200;
+  @apply relative w-8 h-8 md:w-11 md:h-11 rounded-full transition-transform duration-200 shadow-sm;
   @apply md:mt-8;
 }
 
@@ -240,6 +240,15 @@ background:
   .step-box.active { background-color: #2196F3; }
 }
 
+
+.clamped-text {
+  hyphens: auto;
+  word-break: break-word; /* Fallback */
+  overflow-wrap: break-word;
+  padding: 0 20px; /* Equal indentation */
+  text-align: justify; /* Optional */
+}
+
 /* Modal Styles */
 .modal-overlay {
   @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
@@ -283,7 +292,15 @@ background:
 }
 
 .footer-link {
-  @apply text-gray-400 hover:text-white transition-colors duration-200;
+  @apply text-gray-400 hover:text-white transition-colors duration-200 block;
+}
+
+button.footer-link {
+  @apply text-gray-400 hover:text-white transition-colors duration-200 block w-full text-left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .footer-social {
